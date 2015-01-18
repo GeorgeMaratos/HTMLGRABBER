@@ -59,7 +59,7 @@ void
 interface(char *url)
 {
   //variables
-  int status;
+  int status, sock, conn;
 //  const char *portNumber;
   struct addrinfo *hints;
   struct addrinfo *results;
@@ -71,10 +71,26 @@ interface(char *url)
     printf("Error: getaddrinfo <%s>\n", gai_strerror(status));
     return;
   }
-  else printIp(results);
+  else
+  {
+    sock = socket(results->ai_family,results->ai_socktype,results->ai_protocol);
+    if(DEBUG && sock < 0)
+    {
+      printf("Error: socket connection failue\n");
+      return;
+    }
+    else
+    {
+      conn = connect(sock,results->ai_addr,results->ai_addrlen);
+      if(DEBUG && conn < 0)
+      {
+	printf("Error: connection failure\n");
+	return;
+      }
+    }
+  }
   //free memory
   freeaddrinfo(results);
   free(hints);
-  
 }
 
