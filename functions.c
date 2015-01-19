@@ -60,12 +60,14 @@ interface(char *url)
 {
   //variables
   int status, sock, conn;
-//  const char *portNumber;
+  const char *portNumber;
   struct addrinfo *hints;
   struct addrinfo *results;
   //ops
+  portNumber = "80";
   hints = prep();
-  status = getaddrinfo(url,NULL,hints,&results);
+  status = getaddrinfo(url,portNumber,hints,&results);
+  if(DEBUG) printf("getaddrinfo\n");
   if(DEBUG && status != 0)
   {
     printf("Error: getaddrinfo <%s>\n", gai_strerror(status));
@@ -73,6 +75,7 @@ interface(char *url)
   }
   else
   {
+    if(DEBUG) printf("socket\n");
     sock = socket(results->ai_family,results->ai_socktype,results->ai_protocol);
     if(DEBUG && sock < 0)
     {
@@ -81,12 +84,14 @@ interface(char *url)
     }
     else
     {
+      if(DEBUG) printf("connect\n");
       conn = connect(sock,results->ai_addr,results->ai_addrlen);
       if(DEBUG && conn < 0)
       {
 	printf("Error: connection failure\n");
 	return;
       }
+      else if(DEBUG) printf("all sucessful\n");
     }
   }
   //free memory
