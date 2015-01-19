@@ -6,6 +6,7 @@
 #include<netdb.h>
 #include<string.h>
 #define DEBUG 1
+#define BUFFERSIZE 1000000 
 
 //prep
 struct addrinfo *
@@ -54,21 +55,40 @@ printIp(struct addrinfo *r)
   }
 }
 
+//write to file
+void
+toFile(int size, char *string)
+{
+  //variables
+  FILE *f;
+  char *mode;
+  int i;
+  //ops
+  mode = "w";
+  f = fopen("index.html",mode);
+  for(i=0;i<size;i++)
+    fprintf(f,"%c",string[i]);
+  fclose(f);
+}
 //interface
 void
 interface(char *url)
 {
   //variables
-  int status, sock, conn;
+  int status, sock, conn, stlen, bytes;
   const char *portNumber;
+  char *buffer, *request;
   struct addrinfo *hints;
   struct addrinfo *results;
   //ops
+  request = "GET / HTTP/1.0\r\n\r\n";
   portNumber = "80";
+  stlen = strlen(request);
+  buffer = malloc(BUFFERSIZE);
   hints = prep();
   status = getaddrinfo(url,portNumber,hints,&results);
   if(DEBUG) printf("getaddrinfo\n");
-  if(DEBUG && status != 0)
+  if(status != 0)
   {
     printf("Error: getaddrinfo <%s>\n", gai_strerror(status));
     return;
@@ -77,7 +97,7 @@ interface(char *url)
   {
     if(DEBUG) printf("socket\n");
     sock = socket(results->ai_family,results->ai_socktype,results->ai_protocol);
-    if(DEBUG && sock < 0)
+    if(sock < 0)
     {
       printf("Error: socket connection failue\n");
       return;
@@ -86,16 +106,33 @@ interface(char *url)
     {
       if(DEBUG) printf("connect\n");
       conn = connect(sock,results->ai_addr,results->ai_addrlen);
-      if(DEBUG && conn < 0)
+      if(conn < 0)
       {
 	printf("Error: connection failure\n");
 	return;
       }
-      else if(DEBUG) printf("all sucessful\n");
+      else
+      {
+	if(DEBUG) printf("sending request\n");
+	bytes = send(sock,request,stlen,0);
+	if(bytes < 0)
+	{
+	  printf("Error: fail send()\n");
+	  return;
+	}
+	else
+	{
+	  if(DEBUG) printf("waiting for a reply\n");
+	  recv(sock,buffer,BUFFERSIZE,0);
+	  if(DEBUG) printf("writing to file\n");
+	  toFile(BUFFERSIZE,buffer);
+	}
+      }
     }
   }
   //free memory
   freeaddrinfo(results);
   free(hints);
+  free(buffer);
 }
 
