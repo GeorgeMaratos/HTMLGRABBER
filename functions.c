@@ -8,6 +8,47 @@
 #define DEBUG 1
 #define BUFFERSIZE 1000000 
 
+typedef struct url
+{
+  int size;
+  char *first, *second;
+}Url;
+
+Url *
+format(char *string)
+{
+  //variables
+  int i, size, index;
+  Url *ret;
+  //ops
+  ret = malloc(sizeof(Url));
+  size = strlen(string);
+  if(size < 7)
+  {
+    printf("Error: url is not valid\n");
+    return NULL;
+  }
+  ret->first = malloc(sizeof(char) * size);
+  ret->second = malloc(sizeof(char) * size); 
+  for(i=0;i<size;i++)
+  {
+    if(i < 6)
+      ret->first[i] = string[i];
+    else 
+    {
+      if(string[i] != '/')
+	ret->first[i] = string[i];
+      else break;
+    }
+  }
+  index = i;
+  while( i < size )
+    ret->second[i - index] = string[i++];
+  if(DEBUG) printf("parsed url: %s||%s\n",ret->first, ret->second);
+  //return
+  return ret;
+}
+      
 //prep
 struct addrinfo *
 prep()
@@ -80,13 +121,18 @@ interface(char *url)
   char *buffer, *request;
   struct addrinfo *hints;
   struct addrinfo *results;
+  Url *parsedUrl;
   //ops
-  request = "GET / HTTP/1.0\r\n\r\n";
+  request = malloc(sizeof(char) * 100);
+  parsedUrl = format(url);
+  if(DEBUG) printf("scope check: %s\n", parsedUrl->second);
+  sprintf(request,"GET %s / HTML/1.0\r\n\r\n", parsedUrl->second);
+  if(DEBUG) printf("request: %s\n", request);
   portNumber = "80";
   stlen = strlen(request);
   buffer = malloc(BUFFERSIZE);
   hints = prep();
-  status = getaddrinfo(url,portNumber,hints,&results);
+  status = getaddrinfo(parsedUrl->first,portNumber,hints,&results);
   if(DEBUG) printf("getaddrinfo\n");
   if(status != 0)
   {
@@ -134,5 +180,7 @@ interface(char *url)
   freeaddrinfo(results);
   free(hints);
   free(buffer);
+  free(parsedUrl);
+  free(request);
 }
 
