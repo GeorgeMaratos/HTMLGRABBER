@@ -20,7 +20,10 @@ format(char *string)
   //variables
   int i, size, index;
   Url *ret;
+  char *f;
   //ops
+  f = malloc(sizeof(char) * 11);
+  f = "/index.html";
   ret = malloc(sizeof(Url));
   size = strlen(string);
   if(size < 7)
@@ -30,20 +33,16 @@ format(char *string)
   }
   ret->first = malloc(sizeof(char) * size);
   ret->second = malloc(sizeof(char) * size); 
-  for(i=0;i<size;i++)
+  for(i=7;i<size;i++)
   {
-    if(i < 6)
-      ret->first[i] = string[i];
-    else 
-    {
-      if(string[i] != '/')
-	ret->first[i] = string[i];
-      else break;
-    }
+    if(string[i] != '/')
+	ret->first[i - 7] = string[i];
+    else break;
   }
   index = i;
   while( i < size )
     ret->second[i - index] = string[i++];
+  if(strlen(ret->second) < 3) ret->second = f;
   if(DEBUG) printf("parsed url: %s||%s\n",ret->first, ret->second);
   //return
   return ret;
@@ -125,7 +124,6 @@ interface(char *url)
   //ops
   request = malloc(sizeof(char) * 100);
   parsedUrl = format(url);
-  if(DEBUG) printf("scope check: %s\n", parsedUrl->second);
   sprintf(request,"GET %s / HTML/1.0\r\n\r\n", parsedUrl->second);
   if(DEBUG) printf("request: %s\n", request);
   portNumber = "80";
