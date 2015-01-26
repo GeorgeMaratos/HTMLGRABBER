@@ -42,8 +42,12 @@ format(char *string)
   index = i;
   while( i < size )
     ret->second[i - index] = string[i++];
-//  if(strlen(ret->second) < 3) ret->second = f;
   if(DEBUG) printf("parsed url: %s||%s\n",ret->first, ret->second);
+
+  //line added to fix google.com problem
+  if(DEBUG) printf("Size of second: %d\n", strlen(ret->second));
+  if(strlen(ret->second) < 1)
+    ret->second = f;
   //return
   return ret;
 }
@@ -124,7 +128,7 @@ interface(char *url)
   //ops
   request = malloc(sizeof(char) * 200);
   parsedUrl = format(url);
-  sprintf(request,"GET %s / HTTP/1.0\r\nHost: %s\r\nConnection: close\r\nUser-agent: Mozilla/5.0\r\nAccept-language: en\n\r\n", parsedUrl->second, parsedUrl->first);
+  sprintf(request,"GET %s HTTP/1.0\r\nHost: %s\r\nConnection: close\r\nUser-agent: Mozilla/5.0\r\nAccept-language: en\n\r\n", parsedUrl->second, parsedUrl->first);
   if(DEBUG) printf("request: %s\n", request);
   portNumber = "80";
   stlen = strlen(request);
