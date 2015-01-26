@@ -11,8 +11,42 @@
 typedef struct url
 {
   int size;
-  char *first, *second;
+  char *first, *second, *fileName;
 }Url;
+
+char *
+getFilename(char *string)
+{
+  //variables
+  int i, j, stringSize, hasFilename, slashNumber, sentinel;
+  char *name;
+  //ops
+  j = 0;
+  sentinel = 0;
+  slashNumber = 0;
+  hasFilename = 0;
+  stringSize = strlen(string);
+  name = malloc(stringSize);
+  for(i=0;i<stringSize;i++)
+  {
+    if(string[i] == '.') hasFilename++;
+    else if(string[i] == '/') slashNumber++;
+  }
+  if(DEBUG) printf("filename: %d  slashNumber: %d\n", hasFilename, slashNumber);
+  i = 0;
+  if(hasFilename)
+  {
+    while(i < stringSize)
+    {
+      if(string[i] == '/') sentinel++;
+      if(sentinel >= slashNumber && string[i] != '/') name[j++] = string[i];
+      i++;
+    }
+    if(DEBUG) printf("File Name: %s\n", name);
+  }
+  //return
+  return name;
+}
 
 Url *
 format(char *string)
@@ -20,10 +54,12 @@ format(char *string)
   //variables
   int i, size, index;
   Url *ret;
-  char *f;
+  char *f, *def, *fname;
   //ops
   f = malloc(sizeof(char) * 11);
   f = "/index.html";
+  def = malloc(sizeof(char) * 10);
+  def = "index.html";
   ret = malloc(sizeof(Url));
   size = strlen(string);
   if(size < 7)
@@ -43,11 +79,18 @@ format(char *string)
   while( i < size )
     ret->second[i - index] = string[i++];
   if(DEBUG) printf("parsed url: %s||%s\n",ret->first, ret->second);
-
-  //line added to fix google.com problem
   if(DEBUG) printf("Size of second: %d\n", strlen(ret->second));
   if(strlen(ret->second) < 1)
+  {
     ret->second = f;
+    ret->fileName = fname;
+  }
+  else 
+  {
+    fname = getFilename(ret->second);
+    if(strlen(fname) > 1) ret->fileName = fname;
+    else ret->fileName = def;
+  }
   //return
   return ret;
 }
@@ -101,7 +144,7 @@ printIp(struct addrinfo *r)
 
 //write to file
 void
-toFile(int size, char *string)
+toFile(Url *info, int size, char *string)
 {
   //variables
   FILE *f;
@@ -109,7 +152,7 @@ toFile(int size, char *string)
   int i;
   //ops
   mode = "w";
-  f = fopen("index.html",mode);
+  f = fopen(info->fileName,mode);
   for(i=0;i<size;i++)
     fprintf(f,"%c",string[i]);
   fclose(f);
@@ -173,7 +216,7 @@ interface(char *url)
 	  if(DEBUG) printf("waiting for a reply\n");
 	  recv(sock,buffer,BUFFERSIZE,0);
 	  if(DEBUG) printf("writing to file\n");
-	  toFile(BUFFERSIZE,buffer);
+	  toFile(parsedUrl,BUFFERSIZE,buffer);
 	}
       }
     }
