@@ -56,6 +56,7 @@ format(char *string)
   Url *ret;
   char *f, *def, *fname;
   //ops
+  if(DEBUG) printf("Begin format\n");
   f = malloc(sizeof(char) * 11);
   f = "/index.html";
   def = malloc(sizeof(char) * 10);
@@ -83,7 +84,7 @@ format(char *string)
   if(strlen(ret->second) < 1)
   {
     ret->second = f;
-    ret->fileName = fname;
+    ret->fileName = def;
   }
   else 
   {
@@ -152,6 +153,7 @@ toFile(Url *info, int size, char *string)
   int i;
   //ops
   mode = "w";
+  if(DEBUG) printf("Filename from toFile: %s\n", info->fileName);
   f = fopen(info->fileName,mode);
   for(i=0;i<size;i++)
     fprintf(f,"%c",string[i]);
@@ -216,6 +218,7 @@ interface(char *url)
 	  if(DEBUG) printf("waiting for a reply\n");
 	  recv(sock,buffer,BUFFERSIZE,0);
 	  if(DEBUG) printf("writing to file\n");
+	  if(DEBUG) printf("second: %s\n", parsedUrl->second);
 	  toFile(parsedUrl,BUFFERSIZE,buffer);
 	}
       }
