@@ -79,7 +79,7 @@ format(char *string)
   index = i;
   while( i < size )
     ret->second[i - index] = string[i++];
-  if(DEBUG) printf("parsed url: %s||%s\n",ret->first, ret->second);
+  if(DEBUG) printf("parsed url: %s||%s\n", ret->first, ret->second);
   if(DEBUG) printf("Size of second: %d\n", strlen(ret->second));
   if(strlen(ret->second) < 1)
   {
@@ -112,7 +112,7 @@ prep()
   return h;
 }
 
-//printIp
+//printIp IGNORE, used for debugging
 void
 printIp(struct addrinfo *r)
 {
@@ -138,7 +138,7 @@ printIp(struct addrinfo *r)
       addr = &(ipv6->sin6_addr);
       ipver = "IPV6";
     }
-    inet_ntop(ptr->ai_family,addr,ipstr,sizeof(ipstr));
+    inet_ntop(ptr->ai_family, addr, ipstr, sizeof(ipstr));
     printf("%s: %s\n", ipver, ipstr);
   }
 }
@@ -154,9 +154,9 @@ toFile(Url *info, int size, char *string)
   //ops
   mode = "w";
   if(DEBUG) printf("Filename from toFile: %s\n", info->fileName);
-  f = fopen(info->fileName,mode);
+  f = fopen(info->fileName, mode);
   for(i=0;i<size;i++)
-    fprintf(f,"%c",string[i]);
+    fprintf(f, "%c", string[i]);
   fclose(f);
 }
 //interface
@@ -173,13 +173,13 @@ interface(char *url)
   //ops
   request = malloc(sizeof(char) * 200);
   parsedUrl = format(url);
-  sprintf(request,"GET %s HTTP/1.0\r\nHost: %s\r\nConnection: close\r\nUser-agent: Mozilla/5.0\r\nAccept-language: en\n\r\n", parsedUrl->second, parsedUrl->first);
+  sprintf(request,"GET %s HTTP/1.0\r\nHost: %s\r\n\r\n", parsedUrl->second, parsedUrl->first);
   if(DEBUG) printf("request: %s\n", request);
   portNumber = "80";
   stlen = strlen(request);
   buffer = malloc(BUFFERSIZE);
   hints = prep();
-  status = getaddrinfo(parsedUrl->first,portNumber,hints,&results);
+  status = getaddrinfo(parsedUrl->first, portNumber, hints, &results);
   if(DEBUG) printf("getaddrinfo\n");
   if(status != 0)
   {
@@ -189,7 +189,7 @@ interface(char *url)
   else
   {
     if(DEBUG) printf("socket\n");
-    sock = socket(results->ai_family,results->ai_socktype,results->ai_protocol);
+    sock = socket(results->ai_family, results->ai_socktype, results->ai_protocol);
     if(sock < 0)
     {
       printf("Error: socket connection failue\n");
@@ -198,7 +198,7 @@ interface(char *url)
     else
     {
       if(DEBUG) printf("connect\n");
-      conn = connect(sock,results->ai_addr,results->ai_addrlen);
+      conn = connect(sock, results->ai_addr, results->ai_addrlen);
       if(conn < 0)
       {
 	printf("Error: connection failure\n");
@@ -207,7 +207,7 @@ interface(char *url)
       else
       {
 	if(DEBUG) printf("sending request\n");
-	bytes = send(sock,request,stlen,0);
+	bytes = send(sock, request, stlen, 0);
 	if(bytes < 0)
 	{
 	  printf("Error: fail send()\n");
@@ -216,10 +216,10 @@ interface(char *url)
 	else
 	{
 	  if(DEBUG) printf("waiting for a reply\n");
-	  recv(sock,buffer,BUFFERSIZE,0);
+	  recv(sock, buffer, BUFFERSIZE, 0);
 	  if(DEBUG) printf("writing to file\n");
 	  if(DEBUG) printf("second: %s\n", parsedUrl->second);
-	  toFile(parsedUrl,BUFFERSIZE,buffer);
+	  toFile(parsedUrl, BUFFERSIZE, buffer);
 	}
       }
     }
