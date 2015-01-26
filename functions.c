@@ -5,7 +5,7 @@
 #include<sys/socket.h>
 #include<netdb.h>
 #include<string.h>
-#define DEBUG 1
+#define DEBUG 0
 #define BUFFERSIZE 1000000 
 
 typedef struct url
