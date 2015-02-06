@@ -1,0 +1,7 @@
+This program is written by George Maratos
+
+for cs 450 at UIC
+
+to run:
+ ~first type "make" to compile
+ ~then call urls in the following format ./hw1 <url>
